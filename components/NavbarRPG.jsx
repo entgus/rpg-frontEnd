@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { GiSpellBook, GiPathDistance, GiSwordman } from 'react-icons/gi';
 
+
+
 export default function NavbarRPG() {
   const email = localStorage.getItem('email');
 

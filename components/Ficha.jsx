@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './RPGStyles.css';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 export default function FichaPagina1() {
   const navigate = useNavigate();
   const [tema, setTema] = useState('gold');
@@ -27,27 +29,33 @@ export default function FichaPagina1() {
     personalidade: '',
     imagem: '',
     titulos: '',
-    pontos: 20 // Apenas pontos disponíveis, removendo pontosGastos
+    pontos: 20 // pontos disponíveis para gastar nos atributos
   });
 
- useEffect(() => {
-  try {
-    const fichaSalva = localStorage.getItem('ficha');
-    if (fichaSalva) {
-      const fichaObj = JSON.parse(fichaSalva);
-      console.log('Ficha carregada do localStorage:', fichaObj);
-      if (fichaObj && typeof fichaObj === 'object') {
-        setForm(fichaObj);
+  useEffect(() => {
+    try {
+      const fichaSalva = localStorage.getItem('ficha');
+      if (fichaSalva) {
+        const fichaObj = JSON.parse(fichaSalva);
+        if (fichaObj && typeof fichaObj === 'object') {
+          setForm(fichaObj);
+        }
       }
+    } catch (error) {
+      console.error('Erro ao carregar ficha do localStorage:', error);
     }
-  } catch (error) {
-    console.error('Erro ao carregar ficha do localStorage:', error);
-  }
-}, []);
-
+  }, []);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    // Campos numéricos que precisam ser convertidos
+    const camposNumericos = ['idade', 'vida', 'ca', 'iniciativa'];
+
+    setForm(prevForm => ({
+      ...prevForm,
+      [name]: camposNumericos.includes(name) ? Number(value) : value
+    }));
   };
 
   const handleAtributoChange = (key) => {
@@ -67,19 +75,19 @@ export default function FichaPagina1() {
   const mudarTema = (cor) => setTema(cor);
 
   const salvarFicha = async () => {
-  try {
-    const response = await axios.put('http://localhost:5000/api/users/updateFicha', {
-      email: localStorage.getItem('email'),
-      ficha: form,
-    });
-    setForm(response.data.ficha);
-    localStorage.setItem('ficha', JSON.stringify(response.data.ficha));
-    alert('Ficha salva com sucesso!');
-  } catch (err) {
-    console.error(err);
-    alert('Erro ao salvar ficha.');
-  }
-};
+    try {
+      const response = await axios.put(`${API_URL}/api/users/updateFicha`, {
+        email: localStorage.getItem('email'),
+        ficha: form,
+      });
+      setForm(response.data.ficha);
+      localStorage.setItem('ficha', JSON.stringify(response.data.ficha));
+      alert('Ficha salva com sucesso!');
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao salvar ficha.');
+    }
+  };
 
   return (
     <div className={`container py-4 tema-${tema}`}>
@@ -97,7 +105,7 @@ export default function FichaPagina1() {
             <input className="form-control" name="nome" placeholder="Nome" value={form.nome} onChange={handleChange} />
           </div>
           <div className="col-md-2">
-            <input className="form-control" name="idade" placeholder="Idade" value={form.idade} onChange={handleChange} />
+            <input className="form-control" name="idade" type="number" placeholder="Idade" value={form.idade} onChange={handleChange} />
           </div>
           <div className="col-md-2">
             <input className="form-control" name="classe" placeholder="Classe" value={form.classe} onChange={handleChange} />

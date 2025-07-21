@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './RPGStyles.css';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 export default function FichaPagina2() {
   const navigate = useNavigate();
 
@@ -42,7 +44,7 @@ export default function FichaPagina2() {
         // Buscar pontos disponíveis do backend
         const email = localStorage.getItem('email');
         if (email) {
-          const res = await axios.get('http://localhost:5000/api/users/ficha/cartas-pontos', {
+          const res = await axios.get(`${API_URL}/api/users/ficha/cartas-pontos`, {
             params: { email },
           });
           setPontos(res.data.pontosDisponiveis);
@@ -94,7 +96,7 @@ export default function FichaPagina2() {
     try {
       // Atualizar backend para gastar 1 ponto
       const email = localStorage.getItem('email');
-      await axios.put('http://localhost:5000/api/users/ficha/gastar-ponto-carta', { email });
+      await axios.put(`${API_URL}/api/users/ficha/gastar-ponto-carta`, { email });
 
       // Atualiza frontend
       const novaLista = [...cartas, novaCarta];
@@ -115,7 +117,6 @@ export default function FichaPagina2() {
       localStorage.setItem('ficha', JSON.stringify(fichaAtualizada));
 
       alert('Carta criada com sucesso!');
-
     } catch (err) {
       console.error(err);
       alert('Erro ao criar carta. Tente novamente.');
@@ -128,7 +129,7 @@ export default function FichaPagina2() {
       const fichaAntiga = JSON.parse(localStorage.getItem('ficha')) || {};
       const novaFicha = { ...fichaAntiga, ...form, cartas, cartasPontosDisponiveis: pontos };
 
-      await axios.put('http://localhost:5000/api/users/updateFicha', {
+      await axios.put(`${API_URL}/api/users/updateFicha`, {
         email: localStorage.getItem('email'),
         ficha: novaFicha,
       });
@@ -271,4 +272,3 @@ export default function FichaPagina2() {
     </div>
   );
 }
-

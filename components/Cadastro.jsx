@@ -13,7 +13,7 @@ export default function Cadastro() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/users/register', {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/users/register`, {
         username,
         email,
         password,
@@ -32,15 +32,33 @@ export default function Cadastro() {
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label>Nome de Usuário</label>
-            <input type="text" className="form-control" value={username} onChange={(e) => setUsername(e.target.value)} required />
+            <input
+              type="text"
+              className="form-control"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
           </div>
           <div className="mb-3">
             <label>E-mail</label>
-            <input type="email" className="form-control" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input
+              type="email"
+              className="form-control"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
           <div className="mb-3">
             <label>Senha</label>
-            <input type="password" className="form-control" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <input
+              type="password"
+              className="form-control"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
           <button className="rpg-button" type="submit">Cadastrar</button>
         </form>

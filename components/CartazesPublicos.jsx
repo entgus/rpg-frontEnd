@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api'; // usa a instância axios com baseURL e config
 
 function CartazesPublicos({ userId }) {
   const [cartazes, setCartazes] = useState([]);
@@ -15,7 +15,7 @@ function CartazesPublicos({ userId }) {
   }, []);
 
   const buscarCartazes = () => {
-    axios.get('http://localhost:5000/api/cartazes-publicos')
+    api.get('/api/cartazes-publicos')
       .then(response => setCartazes(response.data))
       .catch(error => console.error('Erro ao buscar cartazes públicos:', error));
   };
@@ -29,7 +29,7 @@ function CartazesPublicos({ userId }) {
     const token = localStorage.getItem('token');
     const dadosParaEnviar = { ...formData, userId };
 
-    axios.post('http://localhost:5000/api/cartazes-publicos', dadosParaEnviar, {
+    api.post('/api/cartazes-publicos', dadosParaEnviar, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -86,11 +86,18 @@ function CartazesPublicos({ userId }) {
       {cartazes.length === 0 ? (
         <p>Nenhum cartaz criado ainda.</p>
       ) : (
-        <ul style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center', padding: 0, listStyle: 'none' }}>
+        <ul style={{
+          display: 'flex',
+          gap: '20px',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          padding: 0,
+          listStyle: 'none'
+        }}>
           {cartazes.map((cartaz) => {
             const tipoClasse = `cartaz-${cartaz.tipo.toLowerCase()}`;
             return (
-              <li key={cartaz._id}>
+              <li key={cartaz._id} style={{ flex: '0 1 320px' }}>
                 <div className={`cartaz ${tipoClasse}`}>
                   <h3>{cartaz.titulo}</h3>
                   <p><strong>Recompensa:</strong> {cartaz.recompensa}</p>
