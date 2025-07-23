@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../services/api'; // usa a instância axios com baseURL e config
+import api from '../services/apis'; // usa a instância axios com baseURL e config
 
 function CartazesPublicos({ userId }) {
   const [cartazes, setCartazes] = useState([]);
