@@ -27,7 +27,6 @@ export default function FichaPagina2() {
     notas: '',
   });
 
-  // Carregar dados do localStorage e pontos do backend ao montar
   useEffect(() => {
     async function carregarDados() {
       try {
@@ -41,7 +40,6 @@ export default function FichaPagina2() {
           setCartas(fichaSalva.cartas || []);
         }
 
-        // Buscar pontos disponíveis do backend
         const email = localStorage.getItem('email');
         if (email) {
           const res = await axios.get(`${API_URL}/api/users/ficha/cartas-pontos`, {
@@ -59,18 +57,15 @@ export default function FichaPagina2() {
     carregarDados();
   }, []);
 
-  // Inputs de formulário comum
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Inputs da nova carta
   const handleNovaCartaChange = (e) => {
     const { name, value } = e.target;
     setNovaCarta({ ...novaCarta, [name]: value });
   };
 
-  // Upload imagem (converte para base64)
   const handleImagemChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -82,7 +77,6 @@ export default function FichaPagina2() {
     }
   };
 
-  // Adicionar carta - só se tiver pontos disponíveis
   const adicionarCarta = async () => {
     if (!novaCarta.nome || !novaCarta.raridade) {
       alert('Preencha o nome e escolha a raridade.');
@@ -94,20 +88,15 @@ export default function FichaPagina2() {
     }
 
     try {
-      // Atualizar backend para gastar 1 ponto
       const email = localStorage.getItem('email');
       await axios.put(`${API_URL}/api/users/ficha/gastar-ponto-carta`, { email });
 
-      // Atualiza frontend
       const novaLista = [...cartas, novaCarta];
       setCartas(novaLista);
-
       setPontos(pontos - 1);
 
-      // Limpa o formulário da carta
       setNovaCarta({ nome: '', raridade: 'Bronze', imagem: '', funcionalidade: '' });
 
-      // Atualiza localStorage com as cartas e pontos
       const fichaAtual = JSON.parse(localStorage.getItem('ficha')) || {};
       const fichaAtualizada = {
         ...fichaAtual,
@@ -123,7 +112,6 @@ export default function FichaPagina2() {
     }
   };
 
-  // Salvar página 2 (histórico, aliados, notas, cartas etc)
   const salvarFicha = async () => {
     try {
       const fichaAntiga = JSON.parse(localStorage.getItem('ficha')) || {};
@@ -167,13 +155,31 @@ export default function FichaPagina2() {
               key={idx}
               className={`carta-pequena carta-${carta.raridade.toLowerCase()}`}
               title={carta.nome}
+              style={{
+                width: '200px',
+                padding: '10px',
+                border: '1px solid #999',
+                borderRadius: '10px',
+                backgroundColor: '#fff',
+                textAlign: 'center',
+              }}
             >
               {carta.imagem && (
-                <img src={carta.imagem} alt={carta.nome} className="carta-img" />
+                <img
+                  src={carta.imagem}
+                  alt={carta.nome}
+                  style={{
+                    width: '100px',
+                    height: '100px',
+                    objectFit: 'contain',
+                    margin: '0 auto 8px',
+                    display: 'block',
+                  }}
+                />
               )}
-              <div className="carta-nome">{carta.nome}</div>
-              <div className="carta-raridade">{carta.raridade}</div>
-              <div className="carta-funcionalidade">{carta.funcionalidade}</div>
+              <div className="carta-nome" style={{ fontSize: '14px', fontWeight: 'bold' }}>{carta.nome}</div>
+              <div className="carta-raridade" style={{ fontSize: '12px' }}>{carta.raridade}</div>
+              <div className="carta-funcionalidade" style={{ fontSize: '12px' }}>{carta.funcionalidade}</div>
             </div>
           ))}
         </div>

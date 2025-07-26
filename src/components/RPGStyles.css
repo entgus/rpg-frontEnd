@@ -12,7 +12,7 @@ body {
   padding: 30px;
   box-shadow: 0 0 10px #c6974b;
   color: #e2d3b5; /* Letras dentro do card */
-}
+}d0
 
 .rpg-title {
   font-family: 'Cinzel Decorative', cursive;
@@ -107,30 +107,31 @@ input::placeholder {
   align-items: center;
   text-align: center;
   font-family: 'Cinzel', serif;
+  font-size: 11px; /* fonte menor */
+  line-height: 1.2;
   color: white;
   cursor: pointer;
   box-shadow: 0 0 6px rgba(0,0,0,0.7);
   transition: transform 0.3s ease;
   position: relative;
-  padding: 8px;
+  padding: 6px; /* menos padding */
   background-size: cover;
   background-position: center;
   overflow: hidden;
+  word-break: break-word;
 }
 
 /* Hover */
 .carta-pequena:hover {
-  transform: scale(1.1);
+  transform: scale(1.08);
   box-shadow: 0 0 15px 3px rgba(255,255,255,0.8);
 }
 
 /* Raridade: Bronze */
 .carta-bronze {
-  width: 120px;
-  height: 160px;
+  width: 230px;
+  height: 250px;
   background-image: url('/src/imagens/bronze.png');
-  background-size: cover;
-  background-position: center;
   border: 2px solid #5c3a1d;
   border-radius: 8px;
   box-shadow: inset 0 0 10px #3e2712;
@@ -138,33 +139,29 @@ input::placeholder {
 
 /* Raridade: Prata */
 .carta-prata {
-  width: 120px;
-  height: 160px;
+  width: 230px;
+  height: 250px;
   background-image: url('/src/imagens/prata.png');
-  background-size: cover;
-  background-position: center;
   border: 2.5px solid #a1a1a1;
   border-radius: 15px;
   color: #222;
   box-shadow: inset 0 0 12px #f0f0f0;
-  position: relative;
 }
 
 /* Raridade: Dourada */
 .carta-dourada {
-  width: 130px;
-  height: 170px;
+  width: 230px;
+  height: 250px;
   background-image: url('/src/imagens/ouro.png');
-  background-size: cover;
-  background-position: center;
   border: 3px solid #c49b00;
   border-radius: 22px;
   color: #222;
   box-shadow:
     0 0 15px 3px gold,
     inset 0 0 25px 3px #fff4b8;
-  position: relative;
+  animation: brilhoDourado 4s ease-in-out infinite;
 }
+
 @keyframes brilhoDourado {
   0%, 100% { text-shadow: 0 0 5px #fffdd0; }
   50% { text-shadow: 0 0 20px #fffdd0; }
@@ -172,36 +169,32 @@ input::placeholder {
 
 /* Raridade: Diamante */
 .carta-diamante {
-  width: 140px;
-  height: 170px;
+  width: 230px;
+  height: 250px;
   background-image: url('/src/imagens/diamante.png');
-  background-size: cover;
-  background-position: center;
   border: 3px solid #5fd0ff;
   border-radius: 18px;
   color: #222;
   box-shadow:
     0 0 18px 4px #79dfff,
     inset 0 0 25px 4px #a3e6ff;
-  position: relative;
 }
 
 /* Raridade: Mestre */
 .carta-mestre {
-  width: 140px;
-  height: 180px;
+  width: 230px;
+  height: 250px;
   background-image: url('/src/imagens/mestre.png');
-  background-size: cover;
-  background-position: center;
   border: 4px solid gold;
   border-radius: 20px;
   color: gold;
   box-shadow:
     0 0 15px 4px crimson,
     inset 0 0 30px 5px gold;
-  position: relative;
   overflow: visible;
+  animation: pulsarCoroa 4s infinite;
 }
+
 @keyframes pulsarCoroa {
   0%, 100% { text-shadow: 0 0 10px crimson; }
   50% { text-shadow: 0 0 20px crimson; }
@@ -209,26 +202,30 @@ input::placeholder {
 
 /* Raridade: Lendária */
 .carta-lendaria {
-  width: 150px;
-  height: 190px;
+  width: 230px;
+  height: 250px;
   background-image: url('/src/imagens/lendaria.png');
-  background-size: cover;
-  background-position: center;
   border: 4px solid #9b4ec4;
   border-radius: 25px;
   color: #e6d0ff;
   box-shadow:
     0 0 20px 4px #b77aff,
     inset 0 0 25px 4px #d9baff;
-  position: relative;
   overflow: visible;
   animation: brilhoMagico 5s ease-in-out infinite;
 }
 
 @keyframes brilhoMagico {
-  0%, 100% { box-shadow: 0 0 20px 4px #b77aff, inset 0 0 25px 4px #d9baff; }
-  50% { box-shadow: 0 0 30px 6px #cdaaff, inset 0 0 35px 6px #f0d6ff; }
+  0%, 100% {
+    box-shadow: 0 0 20px 4px #b77aff,
+                inset 0 0 25px 4px #d9baff;
+  }
+  50% {
+    box-shadow: 0 0 30px 6px #cdaaff,
+                inset 0 0 35px 6px #f0d6ff;
+  }
 }
+
 
 .cartaz {
   position: relative;
