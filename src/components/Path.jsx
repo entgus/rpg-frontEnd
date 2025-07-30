@@ -1,142 +1,179 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import './RPGStyles.css';
+import "./RPGStyles.css";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 export default function PathsManager() {
   const email = localStorage.getItem("email");
+  const token = localStorage.getItem("token");
 
   const [pathPoints, setPathPoints] = useState(0);
-  const [paths, setPaths] = useState([
-    // Exemplo: cada node sabe sua posição (nível, coluna) e conexões (ids dos nodes filhos)
-    {
-      id: 1,
-      nome: "Caminho A",
-      descricao: "Descrição do Caminho A.",
-      desbloqueado: false,
-      nivel: 1,
-      coluna: 2,
-      filhos: [2, 3],
-    },
-    {
-      id: 2,
-      nome: "Caminho B",
-      descricao: "Descrição do Caminho B.",
-      desbloqueado: false,
-      nivel: 2,
-      coluna: 1,
-      filhos: [],
-    },
-    {
-      id: 3,
-      nome: "Caminho C",
-      descricao: "Descrição do Caminho C.",
-      desbloqueado: false,
-      nivel: 2,
-      coluna: 3,
-      filhos: [],
-    },
-  ]);
+  const [paths, setPaths] = useState([]);
+  const [connections, setConnections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [resPoints, resPaths] = await Promise.all([
-          axios.get(`${API_URL}/api/users/ficha/path-points`, { params: { email } }),
-          axios.get(`${API_URL}/api/users/ficha/paths`, { params: { email } }),
-        ]);
-        setPathPoints(resPoints.data.pathPoints || 0);
-        if (resPaths.data.paths && resPaths.data.paths.length > 0) {
-          setPaths(resPaths.data.paths);
+        if (!token) {
+          setErro("Usuário não autenticado.");
+          setLoading(false);
+          return;
         }
+
+        // Configuração do header com token
+        const config = {
+          headers: { Authorization: `Bearer ${token}` },
+        };
+
+        // Pega pontos de path (pode enviar email se backend aceitar)
+        const resPoints = await axios.get(`${API_URL}/api/users/ficha/path-points`, {
+          params: { email },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        // Pega paths do usuário
+        const resPaths = await axios.get(`${API_URL}/api/users/ficha/paths`, {
+          params: { email },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        // Pega conexões entre os paths (essa rota usa só token, sem email)
+        const resConnections = await axios.get(`${API_URL}/api/users/ficha/conexoes`, config);
+
+        setPathPoints(resPoints.data.pathPoints || 0);
+
+        const pathsNormalizados = (resPaths.data.paths || []).map((p) => ({
+          ...p,
+          desbloqueado: p.desbloqueado || false,
+          filhos: Array.isArray(p.filhos) ? p.filhos : [],
+          nivel: typeof p.nivel === "number" ? p.nivel : 1,
+          coluna: typeof p.coluna === "number" ? p.coluna : 1,
+        }));
+
+        setPaths(pathsNormalizados);
+        setConnections(resConnections.data.pathConnections || []);
       } catch (e) {
         setErro("Erro ao carregar dados.");
+        console.error(e);
       } finally {
         setLoading(false);
       }
     }
-    fetchData();
-  }, [email]);
+
+    if (email) fetchData();
+    else {
+      setErro("Usuário não autenticado.");
+      setLoading(false);
+    }
+  }, [email, token]);
+
+  function podeDesbloquear(id) {
+    const path = paths.find((p) => p.id === id);
+    if (!path || path.desbloqueado) return false;
+
+    const pais = paths.filter((p) => p.filhos?.includes(id));
+    if (pais.length === 0) return true;
+
+    return pais.some((pai) => pai.desbloqueado);
+  }
 
   async function desbloquearPath(id) {
     if (pathPoints <= 0) {
       alert("Você não possui pontos para desbloquear caminhos.");
       return;
     }
+
+    if (!podeDesbloquear(id)) {
+      alert("Você precisa desbloquear o caminho anterior primeiro.");
+      return;
+    }
+
     const index = paths.findIndex((p) => p.id === id);
-    if (index === -1) return;
-    if (paths[index].desbloqueado) {
+    if (index === -1 || paths[index].desbloqueado) {
       alert("Caminho já desbloqueado!");
       return;
     }
-    const novosPaths = [...paths];
-    novosPaths[index].desbloqueado = true;
+
+    const novosPaths = paths.map((path) =>
+      path.id === id ? { ...path, desbloqueado: true } : path
+    );
 
     try {
-      await axios.put(`${API_URL}/api/users/ficha/gastar-ponto-path`, { email });
-      await axios.put(`${API_URL}/api/users/ficha/update-paths`, {
-        email,
-        paths: novosPaths,
-      });
+      // Enviar token e email no body conforme seu backend espera
+      await axios.put(
+        `${API_URL}/api/users/ficha/gastar-ponto-path`,
+        { email },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      await axios.put(
+        `${API_URL}/api/users/ficha/update-paths`,
+        {
+          email,
+          paths: novosPaths,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
       setPaths(novosPaths);
       setPathPoints((prev) => prev - 1);
       alert("Caminho desbloqueado!");
-    } catch {
+    } catch (error) {
       alert("Erro ao desbloquear caminho.");
+      console.error(error);
+    }
+  }
+
+  function handleKeyDown(event, id) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      desbloquearPath(id);
     }
   }
 
   if (loading) return <div className="loading">Carregando caminhos...</div>;
+  if (!Array.isArray(paths) || paths.length === 0)
+    return <div className="error">Nenhum caminho disponível.</div>;
 
-  // Pega a largura e altura do SVG (depende da quantidade de níveis e colunas)
   const maxNivel = Math.max(...paths.map((p) => p.nivel));
   const maxColuna = Math.max(...paths.map((p) => p.coluna));
   const svgWidth = maxColuna * 150 + 100;
   const svgHeight = maxNivel * 160 + 100;
 
-  // Função para obter as coordenadas do node no SVG
-  const getCoords = (node) => {
-    return {
-      x: node.coluna * 150,
-      y: node.nivel * 160,
-    };
-  };
+  const getCoords = (node) => ({
+    x: node.coluna * 150,
+    y: node.nivel * 160,
+  });
 
-  // Função para desenhar as linhas de conexão entre nodes (usando SVG <line>)
-  const linhasConexao = [];
-  paths.forEach((node) => {
-    const origem = getCoords(node);
-    node.filhos.forEach((filhoId) => {
-      const filho = paths.find((p) => p.id === filhoId);
-      if (!filho) return;
-      const destino = getCoords(filho);
-      linhasConexao.push(
-        <line
-          key={`line-${node.id}-${filhoId}`}
-          x1={origem.x}
-          y1={origem.y + 30} // parte inferior do círculo
-          x2={destino.x}
-          y2={destino.y - 30} // parte superior do círculo
-          stroke={node.desbloqueado ? "#66ccff" : "#444"}
-          strokeWidth={node.desbloqueado ? 4 : 2}
-          strokeLinecap="round"
-          style={{
-            filter: node.desbloqueado ? "drop-shadow(0 0 5px #66ccff)" : "none",
-            transition: "stroke-width 0.3s ease",
-          }}
-        />
-      );
-    });
+  // Desenha linhas a partir da lista de conexões
+  const linhasConexao = connections.map(({ from, to }) => {
+    const origem = getCoords(paths.find((p) => p.id === from));
+    const destino = getCoords(paths.find((p) => p.id === to));
+    if (!origem || !destino) return null;
+
+    return (
+      <line
+        key={`line-${from}-${to}`}
+        x1={origem.x}
+        y1={origem.y + 30}
+        x2={destino.x}
+        y2={destino.y - 30}
+        stroke="#66ccff"
+        strokeWidth={4}
+        strokeLinecap="round"
+        style={{ filter: "drop-shadow(0 0 5px #66ccff)" }}
+      />
+    );
   });
 
   return (
     <div className="paths-container">
-      <h2>Caminhos do Portador da Energia Z</h2>
-      <p>
-        Pontos de Path disponíveis: <strong>{pathPoints}</strong>
+      <h2 className="titulo-espacial">Caminhos do Portador da Energia Z</h2>
+      <p className="pontos-texto">
+        Pontos disponíveis: <strong>{pathPoints}</strong>
       </p>
       {erro && <div className="error">{erro}</div>}
 
@@ -156,33 +193,24 @@ export default function PathsManager() {
               className={`path-node ${node.desbloqueado ? "unlocked" : "locked"}`}
               transform={`translate(${x},${y})`}
               onClick={() => desbloquearPath(node.id)}
+              onKeyDown={(e) => handleKeyDown(e, node.id)}
+              tabIndex={0}
+              role="button"
+              aria-label={`Caminho ${node.nome}. ${
+                node.desbloqueado ? "Desbloqueado" : "Bloqueado"
+              }`}
             >
               <circle className="node-circle" r="30" cx="0" cy="0" />
-              <text
-                className="node-label"
-                x="0"
-                y="50"
-                textAnchor="middle"
-                pointerEvents="none"
-              >
+              <text className="node-label" x="0" y="50" textAnchor="middle">
                 {node.nome || `Caminho ${node.id}`}
               </text>
-
-              {/* Tooltip */}
-              <foreignObject
-                x="-150"
-                y="-90"
-                width="300"
-                height="80"
-                className="node-tooltip"
-              >
-                <div xmlns="http://www.w3.org/1999/xhtml" className="tooltip-content">
-                  <strong>{node.nome || `Caminho ${node.id}`}</strong>
-                  <p>{node.descricao || "Sem descrição"}</p>
-                  {!node.desbloqueado && <p style={{color:'#faa'}}>Clique para desbloquear</p>}
-                  {node.desbloqueado && <p style={{color:'#6f6'}}>Desbloqueado</p>}
-                </div>
-              </foreignObject>
+              <title>
+                {node.nome}
+                {"\n"}
+                {node.descricao || "Sem descrição"}
+                {"\n"}
+                {node.desbloqueado ? "Desbloqueado" : "Clique para desbloquear"}
+              </title>
             </g>
           );
         })}

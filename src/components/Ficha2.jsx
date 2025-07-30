@@ -89,7 +89,18 @@ export default function FichaPagina2() {
 
     try {
       const email = localStorage.getItem('email');
-      await axios.put(`${API_URL}/api/users/ficha/gastar-ponto-carta`, { email });
+      const token = localStorage.getItem('token'); // PEGAR TOKEN DO LOCAL STORAGE
+
+      // ALTERAÇÃO: usar POST e enviar token no header Authorization
+      await axios.post(
+        `${API_URL}/api/users/ficha/gastar-ponto-carta`,
+        { email },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Se não usar token, pode remover esta linha
+          },
+        }
+      );
 
       const novaLista = [...cartas, novaCarta];
       setCartas(novaLista);

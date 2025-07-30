@@ -299,156 +299,126 @@ li {
 .cartaz-extremo {
   background-image: url('../imagens/cartaz-extremo.png');
 }
-/* Fundo preto com estrelas */
 .paths-container {
   background-color: #000;
-  min-height: 100vh;
-  padding: 40px 20px;
   color: #eee;
   font-family: 'Orbitron', sans-serif;
-  position: relative;
+  min-height: 100vh;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   overflow-x: auto;
+
+  background-image:
+    radial-gradient(circle at 20% 30%, #fff3 1px, transparent 2px),
+    radial-gradient(circle at 80% 70%, #fff2 1px, transparent 2px),
+    radial-gradient(circle at 50% 50%, #fff1 2px, transparent 4px);
+  background-size: 200px 200px;
+  animation: starsTwinkle 20s linear infinite;
 }
 
-/* Estrelas feitas com box-shadow fixo */
-.paths-container::before {
-  content: "";
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: transparent;
-  box-shadow:
-    10px 20px 2px #fff,
-    40px 80px 2px #fff,
-    70px 200px 2px #fff,
-    120px 50px 2px #fff,
-    200px 130px 2px #fff,
-    300px 100px 2px #fff,
-    350px 180px 2px #fff,
-    420px 40px 2px #fff,
-    460px 300px 2px #fff,
-    520px 90px 2px #fff,
-    600px 150px 2px #fff,
-    700px 70px 2px #fff,
-    750px 220px 2px #fff,
-    850px 30px 2px #fff,
-    900px 180px 2px #fff,
-    980px 110px 2px #fff;
-  pointer-events: none;
-  z-index: 0;
+@keyframes starsTwinkle {
+  0% { background-position: 0 0; }
+  100% { background-position: 200px 200px; }
 }
 
-/* Título */
 .paths-container h2 {
-  text-align: center;
-  font-size: 2.4rem;
-  margin-bottom: 10px;
+  font-size: 2rem;
   color: #66ccff;
-  text-shadow: 0 0 15px #44aaff;
+  text-shadow: 0 0 8px #3399ff;
+  margin-bottom: 16px;
 }
 
-/* Pontos disponíveis */
 .paths-container p {
-  text-align: center;
-  font-size: 1.3rem;
-  margin-bottom: 40px;
+  font-size: 1.2rem;
   color: #99ddff;
+  margin-bottom: 30px;
+  text-shadow: 0 0 4px #33bbff;
 }
 
-/* SVG container */
 .path-svg {
-  display: block;
   margin: 0 auto;
   overflow: visible;
   cursor: default;
 }
 
-/* Node - círculo */
+/* Nó base */
 .path-node {
   cursor: pointer;
   user-select: none;
-  transition: transform 0.3s ease;
+  filter: drop-shadow(0 0 5px #66ccff);
 }
 
+/* Sem zoom ao passar o mouse */
 .path-node:hover {
-  transform: scale(1.3);
-  z-index: 10;
+  filter: drop-shadow(0 0 8px #33ccff);
 }
 
-/* Círculo do node */
+/* Estilo do círculo */
 .node-circle {
-  fill: radial-gradient(circle at center, #003366 70%, #001122 100%);
-  stroke: #444;
-  stroke-width: 3;
-  filter: drop-shadow(0 0 2px #222);
-  transition: stroke 0.3s ease, filter 0.3s ease;
+  fill: #002244;
+  stroke: #33bbff;
+  stroke-width: 2;
 }
 
-/* Texto do node */
-.node-label {
-  fill: #bbb;
-  font-weight: 700;
-  font-size: 12px;
-  pointer-events: none;
-  user-select: none;
-  filter: drop-shadow(0 0 3px #000);
-}
-
-/* Desbloqueado */
+/* Círculo desbloqueado */
 .path-node.unlocked .node-circle {
-  fill: radial-gradient(circle at center, #004466 70%, #002233 100%);
-  stroke: #66ccff;
-  filter: drop-shadow(0 0 10px #66ccff);
+  fill: #0077cc;
+  stroke: #00ffff;
+  filter: drop-shadow(0 0 10px #00ffff);
+}
+
+/* Texto dos nós */
+.node-label {
+  fill: #aad4ff;
+  font-size: 14px;
+  text-shadow: 0 0 5px #33ccff;
+  user-select: none;
+  pointer-events: none;
 }
 
 .path-node.unlocked .node-label {
-  fill: #66ccff;
-  filter: drop-shadow(0 0 10px #66ccff);
+  fill: #00ffff;
+  text-shadow: 0 0 10px #00ffff;
 }
 
-/* Tooltip - inicialmente escondido */
+/* Tooltip */
 .node-tooltip {
   opacity: 0;
-  pointer-events: none;
+  position: absolute;
+  background: rgba(0, 20, 40, 0.85);
+  border: 2px solid #33ccff;
+  border-radius: 10px;
+  padding: 10px;
+  color: #aad4ff;
+  font-size: 0.9rem;
+  box-shadow: 0 0 10px #33ccff;
   transition: opacity 0.3s ease;
+  z-index: 20;
 }
 
-/* Mostrar tooltip no hover do node */
 .path-node:hover .node-tooltip {
   opacity: 1;
-  pointer-events: auto;
-  transition-delay: 0.2s;
 }
 
-/* Tooltip conteúdo */
-.tooltip-content {
-  background: rgba(20, 30, 40, 0.9);
-  border: 2px solid #66ccff;
-  border-radius: 12px;
-  padding: 10px;
-  color: #ddd;
-  font-size: 0.85rem;
-  width: 280px;
-  box-shadow: 0 0 20px #66ccff;
-  user-select: text;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  pointer-events: auto;
-  cursor: default;
+/* Linha entre nós */
+line {
+  stroke-linecap: round;
+  transition: stroke-width 0.3s ease;
 }
 
-/* Erro */
+/* Mensagens */
 .error {
-  color: #ff5555;
+  color: #ff4444;
+  font-weight: bold;
+  text-shadow: 0 0 4px #ff0000;
   text-align: center;
-  margin-bottom: 20px;
-  font-weight: 700;
 }
 
-/* Loading */
 .loading {
-  font-size: 1.3rem;
-  color: #666;
+  color: #ccc;
   text-align: center;
-  margin-top: 40px;
+  font-size: 1.2rem;
+  margin-top: 30px;
 }
